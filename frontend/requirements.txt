@@ -1,0 +1,13 @@
+PyYAML
+requests==2.32.3
+streamlit==1.46.1
+spacy==3.8.2
+pandas==2.2.3
+numpy==1.23.5
+beautifulsoup4==4.12.3
+textblob
+urllib3
+matplotlib==3.9.2 
+scikit-learn==1.6.1
+feedparser==6.0.8
+python-dateutil
