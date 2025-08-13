@@ -1,0 +1,30 @@
+version: "1.0"
+
+# Frontend talks to backend using http://backend:8000
+# Both are in the same network (appnet)
+# Backend is listening on 0.0.0.0 (allows listening to internal+external)
+# One command to start all containers, built in private network for communication,
+# centralized configuration, version control and reproducable
+
+services: # Define all the docker services here
+  backend:
+    build: ./backend
+    container_name: kitwe-backend
+    ports:
+      - "8000:8000"
+    networks:
+      - appnet
+
+  frontend:
+    build: ./frontend
+    container_name: kitwe-frontend
+    ports:
+      - "8501:8501"
+    networks:
+      - appnet
+    depends_on: # defines the order of the service. Will wait till the backend is active.
+      - backend
+
+networks: # Define a custom docker network service where the dockers can communicate internally via service name instead of local host
+  appnet: # name of the network service
+    driver: bridge
