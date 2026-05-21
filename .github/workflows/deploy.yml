@@ -1,0 +1,52 @@
+# 1. Builds frontend & backend images on pushes to the main branch
+# 2. Pushes them to Docker Hub.
+# 3. SSHs into EC2.
+# 4. Runs docker-compose pull && docker-compose up -d to redeploy with new images.
+# secrets are saved within the github repo
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main   # Run pipeline only when pushing to main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # --- Build & Push Backend ---
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build backend image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/news-backend:latest ./backend
+
+      - name: Push backend image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/news-backend:latest
+
+      # --- Build & Push Frontend ---
+      - name: Build frontend image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/news-frontend:latest ./frontend
+
+      - name: Push frontend image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/news-frontend:latest
+
+      # --- Deploy on EC2 ---
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu   # or ec2-user depending on your AMI
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/kitwe-app   # path where docker-compose.yml is stored on EC2
+            docker-compose pull # Refresh the latest images
+            docker-compose up -d

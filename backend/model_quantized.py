@@ -33,7 +33,7 @@ model_handler = ModelHandler()
 
 if __name__ == "__main__":
     df = pd.read_csv('/home/savin/Omdena/Kitwe-News/data/raw-new.csv')
-    df_test = df.iloc[:100,:]
+    df_test = df.iloc[:2,:]
     df_inp = (df_test['Headline'] + " " + df_test['Description']).astype('str')
     lab, conf = model_handler.predict(df_inp.tolist())
     print(lab)
